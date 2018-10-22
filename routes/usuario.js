@@ -13,7 +13,13 @@ var Usuario = require('../models/usuario');
 // ------------------------------
 app.get('/', (req, res, next) => {
 
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
+
     Usuario.find({}, 'noEmpleado nombre apellido usuario img role')
+        .skip(desde)
+        .limit(5)
         .exec(
             (err, usuarios) => {
 
@@ -25,21 +31,25 @@ app.get('/', (req, res, next) => {
 
                     });
                 }
-                res.status(200).json({
-                    ok: true,
-                    usuarios: usuarios
+                Usuario.count({}, (err, conteo) => {
+                    res.status(200).json({
+                        ok: true,
+                        usuarios: usuarios,
+                        total: conteo
+
+                    });
+
+
                 });
 
             });
 
 });
 
-
-
 // ------------------------------
 // Actualizar usuario
 // ------------------------------
-app.put('/:id', (req, res) => {
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
     var id = req.params.id;
     var body = req.body;
@@ -92,10 +102,6 @@ app.put('/:id', (req, res) => {
 });
 
 
-
-
-
-
 // ------------------------------
 // Crear usuarios
 // ------------------------------
@@ -137,7 +143,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
 // ------------------------------
 // borrar usuario por id
 // ------------------------------
-app.delete('/:id', (req, res) => {
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
     var id = req.params.id;
 
@@ -167,6 +173,5 @@ app.delete('/:id', (req, res) => {
 
     });
 });
-
 
 module.exports = app;
